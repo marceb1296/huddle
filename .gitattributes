@@ -1,0 +1,3 @@
+# Archivos generados siempre con LF
+src/generated/**/.cache/* text eol=lf
+src/generated/**/*.json text eol=lf

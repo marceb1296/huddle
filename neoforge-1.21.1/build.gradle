@@ -1,0 +1,151 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.147'
+    id 'idea'
+}
+
+version = "${mod_version}+neoforge-${minecraft_version}"
+group = mod_group_id
+
+evaluationDependsOn(':core')
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+// sin código propio: con sourceSets.main en el classpath, NeoForge carga el mod aunque loadedMods esté vacío
+sourceSets {
+    noMod
+    // pruebas dentro del juego (GameTest); no van en el jar final
+    gametest {
+        compileClasspath += main.output + main.compileClasspath
+        runtimeClasspath += main.output + main.runtimeClasspath
+    }
+    // comandos para el servidor real de prueba (tools/test-client.sh): un jar aparte que nunca se publica
+    devtools {
+        compileClasspath += main.output + main.compileClasspath
+    }
+}
+
+tasks.register('copyJarToRunMods', Sync) {
+    from(tasks.named('jar'))
+    into(file('run-jar/mods'))
+}
+
+neoForge {
+    version = project.neo_version
+
+    parchment {
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
+    }
+
+    runs {
+        client {
+            client()
+        }
+        // carpeta propia: el cliente y el servidor no comparten mundos ni opciones
+        server {
+            server()
+            gameDirectory = file('run-server')
+        }
+        // como un jugador: solo el jar final en run-jar/mods, con core dentro (jarJar)
+        clientJar {
+            client()
+            sourceSet = sourceSets.noMod
+            loadedMods = []
+            gameDirectory = file('run-jar')
+            taskBefore tasks.named('copyJarToRunMods')
+        }
+        // cliente sin el mod que entra directo al servidor local: el servidor no debe exigir el mod.
+        // Otro nombre que el de client (Dev): con el mismo, el segundo en entrar echa al primero
+        clientNoMod {
+            client()
+            sourceSet = sourceSets.noMod
+            loadedMods = []
+            gameDirectory = file('run-nomod')
+            programArguments.addAll('--quickPlayMultiplayer', 'localhost', '--username', 'Dev2')
+        }
+        // segundo jugador sin el mod para los eventos que necesitan rival (tools/record-gifs.sh)
+        clientHelper {
+            client()
+            sourceSet = sourceSets.noMod
+            loadedMods = []
+            gameDirectory = file('run-helper')
+            programArguments.addAll('--quickPlayMultiplayer', 'localhost', '--username', 'Dev')
+        }
+        // servidor de GameTest: corre las pruebas de gametest/ y se cierra; falla si alguna falla
+        gameTestServer {
+            type = 'gameTestServer'
+            gameDirectory = file('run-gametest')
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+        // las mismas pruebas con un mod de tumbas en run-gametest-graves/mods (se baja aparte, no se versiona)
+        gameTestGraves {
+            type = 'gameTestServer'
+            gameDirectory = file('run-gametest-graves')
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+        // DEBUG: los detalles van a logs/debug.log, como en un servidor real
+        configureEach {
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+            // en desarrollo core se carga como parte del mod; si no, NoClassDefFoundError
+            sourceSet(project(':core').sourceSets.main)
+            sourceSet(sourceSets.gametest)
+        }
+    }
+}
+
+neoForge.addModdingDependenciesTo(sourceSets.noMod)
+neoForge.addModdingDependenciesTo(sourceSets.gametest)
+neoForge.addModdingDependenciesTo(sourceSets.devtools)
+
+tasks.register('devtoolsJar', Jar) {
+    from(sourceSets.devtools.output)
+    archiveFileName = 'huddle-devtools.jar'
+    destinationDirectory = layout.buildDirectory.dir('devtools')
+}
+
+dependencies {
+    implementation project(':core')
+    jarJar project(':core')
+}
+
+var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+    ]
+    inputs.properties replaceProperties
+    expand replaceProperties
+    from "src/main/templates"
+    into "build/generated/sources/modMetadata"
+}
+sourceSets.main.resources.srcDir generateModMetadata
+neoForge.ideSyncTask generateModMetadata
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}

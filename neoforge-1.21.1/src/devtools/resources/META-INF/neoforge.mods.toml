@@ -1,0 +1,17 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="All rights reserved"
+
+[[mods]]
+modId="huddle_dev"
+version="0.0.0"
+displayName="Huddle dev tools"
+displayTest="IGNORE_SERVER_VERSION"
+description='''Test commands for Huddle. Never shipped.'''
+
+[[dependencies.huddle_dev]]
+    modId="huddle"
+    type="required"
+    versionRange="[0,)"
+    ordering="AFTER"
+    side="BOTH"

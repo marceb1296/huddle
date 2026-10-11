@@ -1,0 +1,16 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'huddle'
+
+// Lógica en Java puro, sin dependencias de Minecraft.
+include 'core'
+// Un subproyecto por loader/versión de Minecraft.
+include 'neoforge-1.21.1'

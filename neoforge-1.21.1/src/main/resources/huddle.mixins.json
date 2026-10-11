@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.huddle.neoforge.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "CanHarmPlayerMixin",
+    "EntityAccessor",
+    "PlayerPacketMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
