@@ -4,7 +4,7 @@ Group events any player can start, right where they are. Races, treasure hunts, 
 
 **Server-side only.** Install it on a NeoForge 1.21.1 server and players join with a normal client, vanilla or modded.
 
-Full documentation, with every command and setting: https://huddle-mod.pages.dev
+Download: [Modrinth](https://modrinth.com/project/ZITEwrqu) or [CurseForge](https://www.curseforge.com/minecraft/mc-mods/huddle). Full documentation, with every command and setting: https://huddle-mod.pages.dev
 
 ## Events
 
@@ -51,7 +51,7 @@ Eventos grupales que cualquier jugador puede iniciar, justo donde está. Carrera
 
 **Solo de servidor.** Se instala en un servidor NeoForge 1.21.1 y los jugadores entran con un cliente normal, vanilla o con mods.
 
-Documentación completa, con cada comando y opción: https://huddle-mod.pages.dev
+Descarga: [Modrinth](https://modrinth.com/project/ZITEwrqu) o [CurseForge](https://www.curseforge.com/minecraft/mc-mods/huddle). Documentación completa, con cada comando y opción: https://huddle-mod.pages.dev
 
 ## Eventos
 
